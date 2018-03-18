@@ -1,5 +1,5 @@
-* Start date: 2018-03-15
-* Contributors: Andrei Korigodski <akorigod@gmail.com>, Oleg Kalachev <okalachev@gmail.com>
+* Start date: 2018-03-19
+* Contributors: Andrei Korigodski <akorigod@gmail.com>, Oleg Kalachev <okalachev@gmail.com>, Hamish Willee <hamishwillee@gmail.com>
 * RFC PR: [mavlink/rfcs#2](https://github.com/mavlink/rfcs/pull/2)
 * Related issues: [mavlink/mavlink#861](https://github.com/mavlink/mavlink/issues/861)
 
