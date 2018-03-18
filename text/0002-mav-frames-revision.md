@@ -21,7 +21,7 @@ Let's check current non-global coordinate frames and their description:
 
 Meaning of the first two frames, `MAV_FRAME_LOCAL_NED` and `MAV_FRAME_LOCAL_ENU`, is obvious. The next three are much less clear. First of all, they are defined as "setpoints" or "offsets" instead of frames of reference.
 
-`MAV_FRAME_BODY_NED` description makes clear that it's frame with body orientation (fixed to vehicle): `e.g. useful to command 2 m/s^2 acceleration to the right`, however it's name implies it's NED frame, which is confusing. Description of `MAV_FRAME_BODY_OFFSET_NED` makes thing even more complicated because it looks like it's a real NED frame: `e.g. useful to command 2 m/s^2 acceleration to the east`.
+`MAV_FRAME_BODY_NED` description makes clear that it's frame with body orientation (fixed to vehicle): _"e.g. useful to command 2 m/s^2 acceleration to the right"_, however it's name implies it's NED frame, which is confusing. Description of `MAV_FRAME_BODY_OFFSET_NED` makes thing even more complicated because it looks like it's a real NED frame: _"e.g. useful to command 2 m/s^2 acceleration to the east"_.
 
 The only detailed explanation of current local frames' meaning is in [APM documentation](http://ardupilot.org/dev/docs/copter-commands-in-guided-mode.html#set-position-target-local-ned). It describes `MAV_FRAME_LOCAL_OFFSET_NED` as vehicle-carried NED and `MAV_FRAME_BODY_OFFSET_NED` as vehicle-carried Front-Right-Down frame which is clear. However, behavior of `MAV_FRAME_BODY_NED` frame is complicated:
 
@@ -100,6 +100,7 @@ and decriptions will be updated as stated:
 * `MAV_FRAME` type enumeration will be extended significantly.
 * Naming convention and meaning of existing frame `MAV_FRAME_BODY_NED` will be changed which can cause confusion.
 * `RPY` and `PRY` look similar and could be unintentionally mixed up.
+* `FRD` abbreviation is used in MAVROS (`fcu_frd` frame) to represent a frame which corresponds to `MAV_FRAME_BODY_RPY`.
 
 # Prior art
 
@@ -121,13 +122,15 @@ Common non-global frames are ([[1]](http://www.perfectlogic.com/articles/avionic
 
 ## MAVROS frames
 
+[MAVROS](http://wiki.ros.org/mavros) is ROS package for communication with MAVLink devices. It provides following frames of reference:
+
 * `map` (corresponds to `MAV_FRAME_LOCAL_ENU`);
 * `base_link` (corresponds to `MAV_FRAME_BODY_PRY`);
 * `fcu_frd` (corresponds to `MAV_FRAME_BODY_RPY`).
 
 ## ardrone_autonomy frames
 
-Ardrone_autonomy is ROS package for AR.drone control. It [provides](http://ardrone-autonomy.readthedocs.io/en/latest/frames.html) following frames of reference:
+Ardrone_autonomy is ROS package for AR.Drone control. It [provides](http://ardrone-autonomy.readthedocs.io/en/latest/frames.html) following frames of reference:
 
 * `odom` (corresponds to `MAV_FRAME_LOCAL_ENU_ODOM`);
 * `ardrone_base_link` (corresponds to `MAV_FRAME_BODY_PRY`);
@@ -142,7 +145,7 @@ Ardrone_autonomy is ROS package for AR.drone control. It [provides](http://ardro
 * `fcu_horiz` (corresponds to `MAV_FRAME_LOCAL_FLU`);
 * `fcu` (corresponds to `MAV_FRAME_LOCAL_PRY`).
 
-ENU is used instead of NED to comply with ROS guidelines.
+ENU is used instead of NED to comply with [ROS guidelines](http://www.ros.org/reps/rep-0103.html).
 
 ## DJI Mobile SDK frames
 
