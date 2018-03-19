@@ -23,7 +23,7 @@ Meaning of the first two frames, `MAV_FRAME_LOCAL_NED` and `MAV_FRAME_LOCAL_ENU`
 
 `MAV_FRAME_BODY_NED` description makes clear that it's frame with body orientation (fixed to vehicle): _"e.g. useful to command 2 m/s^2 acceleration to the right"_, however it's name implies it's NED frame, which is confusing. Description of `MAV_FRAME_BODY_OFFSET_NED` makes thing even more complicated because it looks like it's a real NED frame: _"e.g. useful to command 2 m/s^2 acceleration to the east"_.
 
-The only detailed explanation of current local frames meaning is in [APM documentation](http://ardupilot.org/dev/docs/copter-commands-in-guided-mode.html#set-position-target-local-ned). It describes `MAV_FRAME_LOCAL_OFFSET_NED` as vehicle-carried NED and `MAV_FRAME_BODY_OFFSET_NED` as vehicle-carried Front-Right-Down frame which is clear. However, behavior of `MAV_FRAME_BODY_NED` frame is complicated:
+The only detailed explanation of current local frames meaning is in [APM documentation](http://ardupilot.org/dev/docs/copter-commands-in-guided-mode.html#set-position-target-local-ned). It describes `MAV_FRAME_LOCAL_OFFSET_NED` as vehicle-carried NED frame and `MAV_FRAME_BODY_OFFSET_NED` as vehicle-carried Front-Right-Down frame which is clear. However, behavior of `MAV_FRAME_BODY_NED` frame is complicated:
 
 _Positions are relative to the vehicle’s home position in the North, East, Down (NED) frame. Use this to specify a position x metres north, y metres east and (-) z metres above the home position. Velocity directions are relative to the current vehicle heading. Use this to specify the speed forward, right and down (or the opposite if you use negative values)._
 
@@ -41,7 +41,9 @@ It's also necessary in some cases to have a continuous position, without discret
 
 # Detailed Design
 
-Proposed frames of reference naming convention is:
+## Frames of reference naming
+
+Proposed frames naming convention is:
 
 `MAV_FRAME_origin_rotation[_modifier]`,
 
@@ -64,7 +66,8 @@ and `modifier` can be:
 * `ODOM`.
 
 Not all combinations of these designations are proposed to be implemented as part of the current RFC. However, frames of reference named according to proposed convention could be added without separate RFC as pull requests against [mavlink/mavlink](https://github.com/mavlink/mavlink) repository directly.
-__________________________________________________________
+
+## Local frames set
 
 Proposed non-global frames are:
 
@@ -99,7 +102,7 @@ Decriptions will be updated as stated:
 
 # Drawbacks
 
-* Changes will require corresponding amendments of APM and PX4 firmwares and documentation, possibly also some other software which is using MAVLink. However, everything will still work as there will not be introduced any breaking changes in type enumerations. New developers can be confused if frames will behave differently than MAVLink descriptions tell but in fact they are confused now as well because current definitions are obscure anyway. APM docs can be changed simultaneously with the code (and therefore the firmware behavior) so it's not a major problem and it seems like other platforms just don't have any docs on this matter.
+* Changes will require corresponding amendments of APM and PX4 firmwares and documentation as well as some other software which is using MAVLink. However, everything will still work as there will not be introduced any breaking changes in type enumerations. New developers can be confused if frames will behave differently than MAVLink descriptions tell but in fact they are confused now as well because current definitions are obscure anyway. APM docs can be changed simultaneously with the code (and therefore the firmware behavior) so it's not a major problem and it seems like other platforms just don't have any docs on this matter.
 * `MAV_FRAME` type enumeration will be extended significantly.
 * Naming convention and meaning of existing frame `MAV_FRAME_BODY_NED` will be changed which can cause confusion.
 * Name for Front-Left-Up variant of `MAV_FRAME_LOCAL_RPY` is not proposed.
@@ -127,7 +130,7 @@ Common non-global frames are ([[1]](http://www.perfectlogic.com/articles/avionic
 
 ## MAVROS frames
 
-[MAVROS](http://wiki.ros.org/mavros) is ROS package for communication with MAVLink devices. It provides following frames of reference:
+[MAVROS](http://wiki.ros.org/mavros) is a ROS package for communication with MAVLink devices. It provides following frames of reference:
 
 * `map` (corresponds to `MAV_FRAME_LOCAL_ENU`);
 * `base_link` (Front-Left-Up variant of `MAV_FRAME_LOCAL_RPY`);
@@ -135,7 +138,7 @@ Common non-global frames are ([[1]](http://www.perfectlogic.com/articles/avionic
 
 ## ardrone_autonomy frames
 
-Ardrone_autonomy is ROS package for AR.Drone control. It [provides](http://ardrone-autonomy.readthedocs.io/en/latest/frames.html) following frames of reference:
+Ardrone_autonomy is a ROS package for AR.Drone control. It [provides](http://ardrone-autonomy.readthedocs.io/en/latest/frames.html) following frames of reference:
 
 * `odom` (corresponds to `MAV_FRAME_LOCAL_ENU_ODOM`);
 * `ardrone_base_link` (Front-Left-Up variant of `MAV_FRAME_LOCAL_RPY`);
@@ -144,7 +147,7 @@ Ardrone_autonomy is ROS package for AR.Drone control. It [provides](http://ardro
 
 ## CLEVER drone kit frames
 
-[CLEVER](https://github.com/CopterExpress/clever) is open source PX4-compatible platform based on ROS. It supports following frames of reference:
+[CLEVER](https://github.com/CopterExpress/clever) is an open source PX4-compatible platform based on ROS. It supports following frames of reference:
 
 * `local_origin` (corresponds to `MAV_FRAME_LOCAL_ENU`);
 * `fcu_horiz` (corresponds to `MAV_FRAME_LOCAL_FLU`);
