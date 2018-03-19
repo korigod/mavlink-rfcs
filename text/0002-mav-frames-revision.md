@@ -13,6 +13,10 @@ Revise MAVLink local frames of reference to create a clear and comprehensive fra
 
 Rich enough but clear set of coordinate frames is essential for effective drone control.
 
+A frame which is fixed in orientation to the moving vehicle is often necessary e.g. it's native for the vehicle IMU or a camera which is installed on the vehicle without gimbal. When using such a camera for computer vision navigation with existing frames developers need to receive attitude information from the vehicle, transform calculated vehicle coordinates using this attitude to supported frame and send it to the vehicle, which complicates the process and lowers the precision as attitude data is available with certain latency.
+
+It's also necessary in some cases to have a continuous position, without discrete jumps, like integrated vehicle velocity, which is always quite correctly represents vehicle movement in short-term although can drift in long-term. In ROS such a frame is called `odom`.
+
 ## Disadvantages of the current frame set
 
 Current frame set is quite obscure, lacks some useful frames and often leads to confusion ([[1]](https://github.com/ArduPilot/ardupilot/issues/2447), [[2]](https://github.com/ArduPilot/ardupilot/issues/4717), [[3]](https://groups.google.com/forum/#!topic/px4users/X9rclmM9AUw)).
@@ -41,9 +45,7 @@ So the behavior of frames for positions and for velocities is not always the sam
 
 Both `_OFFSET_` frames are not supported by PX4 firmware at all, while `MAV_FRAME_BODY_NED` is supported only for velocity setpoints (where it acts as Forward-Right-Down oriented frame, not NED).
 
-`MAV_FRAME` enumeration lacks a frame which is fixed in orientation to the moving vehicle. Most similar frame, `MAV_FRAME_BODY_OFFSET_NED`, have only the yaw fixed to the vehicle. This frame is often necessary e.g. it's native for the vehicle IMU or a camera which is installed on the vehicle without gimbal. When using such a camera for computer vision navigation with existing frames developers need to receive attitude information from the vehicle, transform calculated vehicle coordinates using this attitude to supported frame and send it to the vehicle, which complicates the process and lowers the precision as attitude data is available with certain latency.
-
-It's also necessary in some cases to have a continuous position, without discrete jumps, like integrated vehicle velocity, which is always quite correctly represents vehicle movement in short-term although can drift in long-term. In ROS such a frame is called `odom`.
+`MAV_FRAME` enumeration lacks a frame which is fixed in orientation to the moving vehicle. Most similar frame, `MAV_FRAME_BODY_OFFSET_NED`, have only the yaw fixed to the vehicle.
 
 # Detailed Design
 
@@ -114,7 +116,7 @@ The decriptions will be updated as follows:
 * `MAV_FRAME` type enumeration will be extended significantly.
 * Naming convention and meaning of existing frame `MAV_FRAME_BODY_NED` will be changed which can cause confusion.
 * Name for Forward-Left-Up variant of `MAV_FRAME_LOCAL_RPY` is not proposed.
-* `FRD` abbreviation is used in MAVROS (`fcu_frd` frame) to represent a frame which corresponds to `MAV_FRAME_BODY_RPY`.
+* `FRD` abbreviation is used in MAVROS to represent a frame which corresponds to `MAV_FRAME_BODY_RPY` (`fcu_frd`).
 
 # Prior art
 
@@ -128,7 +130,7 @@ Common non-global frames ([[5]](http://www.perfectlogic.com/articles/avionics/fl
 
 ## ROS frames convention
 
-[REP-103 [7]](http://www.ros.org/reps/rep-0103.html) specifies axis orientation. In relation to a body the standard is Forward-Left-Up and for geographic locations it's East-North-Up.
+[REP-103 [7]](http://www.ros.org/reps/rep-0103.html) specifies axis orientation. In relation to a body the standard is Forward-Left-Up and for geographic locations **(FIXME)** it's East-North-Up.
 
 [REP-105 [8]](http://www.ros.org/reps/rep-0105.html) specifies naming conventions and semantic meaning for coordinate frames of mobile platforms used with ROS. The basic frames are:
 
@@ -176,6 +178,5 @@ Yaw angle is always relative to north.
 
 * Naming of Forward-Left-Up variant of `MAV_FRAME_LOCAL_RPY`.
 * Necessity of some frame with `BODY_TERRAIN` origin.
-* Necessity of `MAV_FRAME_LOCAL_FRD` is not obvious.
-* Necessity of `MAV_FRAME_LOCAL_NED_ODOM` frame is not obvious.
+* Necessity of `MAV_FRAME_LOCAL_FRD` and `MAV_FRAME_LOCAL_NED_ODOM` frames is not obvious.
 * On some platforms yaw is specified w.r.t. north even in frames with orientation fixed to the vehicle (like `Body` frame in DJI SDK). It would be possibly better to explicitly prohibit this behavior as it leads to inconsistent frame meaning.
