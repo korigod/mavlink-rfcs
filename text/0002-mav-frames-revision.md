@@ -1,4 +1,4 @@
-* Start date: 2018-03-19
+* Start date: 2018-03-20
 * Contributors: Andrei Korigodski <akorigod@gmail.com>, Oleg Kalachev <okalachev@gmail.com>, Hamish Willee <hamishwillee@gmail.com>
 * RFC PR: [mavlink/rfcs#2](https://github.com/mavlink/rfcs/pull/2)
 * Related issues: [mavlink/mavlink#861](https://github.com/mavlink/mavlink/issues/861)
@@ -13,9 +13,19 @@ Revise MAVLink local frames of reference to create a clear and comprehensive fra
 
 Rich enough but clear set of coordinate frames is essential for effective drone control.
 
-A frame which is fixed in orientation to the moving vehicle is often necessary e.g. it's native for the vehicle IMU or a camera which is installed on the vehicle without gimbal. When using such a camera for computer vision navigation with existing frames developers need to receive attitude information from the vehicle, transform calculated vehicle coordinates using this attitude to supported frame and send it to the vehicle, which complicates the process and lowers the precision as attitude data is available with certain latency.
+For example, let's consider a setup in which a companion computer with a camera is used for navigation by recognizing fiducial markers with known coordinates. The location of the drone is calculated and `VISION_POSITION_ESTIMATE` messages are transmitted.
 
-It's also necessary in some cases to have a continuous position, without discrete jumps, like integrated vehicle velocity, which is always quite correctly represents vehicle movement in short-term although can drift in long-term. In ROS such a frame is called `odom`.
+Different frames of reference are necessary in different cases:
+
+* the camera can be installed externally (e.g. motion capture system) — in this case coordinates are naturally in fixed w.r.t. the Earth NED-oriented frame;
+* the camera can be installed on the 2D gimbal, then the origin of the coordinate system should be fixed to the vehicle and yaw orientation should match vehicle yaw;
+* the camera can be mounted onboard without gimbal — in this case both the origin and the orientation of the coordinate system should be fixed to the vehicle.
+
+When using such a setup without appropriate frames developers need to receive attitude information from the vehicle, transform calculated coordinates using this attitude to supported frame and send it to the vehicle, which complicates the process and lowers the precision as attitude data is available with a certain latency.
+
+The same reasoning is correct for a variety of different cases e.g. following a target which is recognized using computer vision or for creating missions with items such as "fly 10 m forward".
+
+It's also necessary in some cases to have a continuous position, without discrete jumps, like integrated vehicle velocity, which always quite correctly represents vehicle movement in short-term although can drift in long-term. In ROS such a frame is called `odom`.
 
 ## Disadvantages of the current frame set
 
@@ -59,7 +69,6 @@ where `origin` can be:
 
 * `LOCAL` for frames with local origin fixed with respect to the Earth;
 * `BODY` for frames with origin fixed to the vehicle;
-* `BODY_TERRAIN` for frames with origin on underlying terrain in a point which is directly below current vehicle location (`BODY` origin), i.e. altitude estimated using sonar or laser rangefinder. For underwater vehicles origin is a point which is directly above the vehicle on the surface;
 
 `rotation` can be:
 
@@ -71,7 +80,8 @@ where `origin` can be:
 
 and `modifier` can be:
 
-* `ODOM`.
+* `TERRAIN` for frames with z equal to the terrain altitude, i.e. an altitude estimated using sonar or laser rangefinder. For underwater vehicles it's the negative distance to the surface;
+* `ODOM` for frames with continuous position, which always quite correctly represents vehicle movement in short-term although can drift in long-term.
 
 Not all combinations of these designations are proposed to be implemented as part of the current RFC. However, frames of reference named according to proposed convention could be added without separate RFC as pull requests against [mavlink/mavlink](https://github.com/mavlink/mavlink) repository directly.
 
@@ -101,22 +111,23 @@ The decriptions will be updated as follows:
 * `MAV_FRAME_LOCAL_OFFSET_NED` and `MAV_FRAME_BODY_OFFSET_NED` will be marked deprecated;
 * `MAV_FRAME_BODY_NED` description will be aligned with proposed meaning.
 
-# Alternatives
-
-* Don't change meaning of `MAV_FRAME_BODY_NED` ... .
-* Drop `LOCAL` for frames with zero in local origin (so `MAV_FRAME_LOCAL_NED` will become `MAV_FRAME_NED`).
-* Use `HOR` or `HORIZ` instead of `FRD`.
-* Use `BODY` instead of `RPY` to describe frames with axes tied to vehicle body. In this case to describe frames with origin fixed to vehicle `OFFSET` or other symbol can be used. However, there is still need for Forward-Left-Up variant.
-* Add `TERRAIN` as modifier instead of part of frame origin.
-* Assign large int values (like 50+) to all local `MAV_FRAME`s to prevent mixing of global and local frames in docs and source code.
-
 # Drawbacks
 
-* Changes will require corresponding amendments of APM and PX4 firmwares and documentation as well as some other software which is using MAVLink. However, everything will still work as there will not be introduced any breaking changes in type enumerations. New developers can be confused if frames will behave differently than MAVLink descriptions tell but in fact they are confused now as well because current definitions are obscure anyway. APM docs can be changed simultaneously with the code (and therefore the firmware behavior) so it's not a major problem and it seems like other platforms just don't have any docs on this matter.
+* Changes will require corresponding amendments of APM and PX4 firmwares and some other software which is using MAVLink as well as corresponding adjustments of the documentation. However, everything will still work as there will not be introduced any breaking changes in type enumerations. New developers can be confused if frames will behave differently than MAVLink descriptions tell but in fact they are confused now as well because current definitions are obscure anyway. APM docs can be changed simultaneously with the code (and therefore the firmware behavior) so it's not a major problem and it seems like other platforms just don't have any docs on this matter.
 * `MAV_FRAME` type enumeration will be extended significantly.
 * Naming convention and meaning of existing frame `MAV_FRAME_BODY_NED` will be changed which can cause confusion.
 * Name for Forward-Left-Up variant of `MAV_FRAME_LOCAL_RPY` is not proposed.
 * `FRD` abbreviation is used in MAVROS to represent a frame which corresponds to `MAV_FRAME_BODY_RPY` (`fcu_frd`).
+
+# Alternatives
+
+* Don't change meaning of the existing frame `MAV_FRAME_BODY_NED`, propose another naming convention instead.
+* Drop `LOCAL` for frames with zero in local origin (so `MAV_FRAME_LOCAL_NED` will become `MAV_FRAME_NED`).
+* Use `HOR` or `HORIZ` instead of `FRD`.
+* Use `RPY_FRD` and `RPY_FLU` to distinguish `RPY` frame axes orientation.
+* Use `BODY` instead of `RPY` to describe frames with axes tied to vehicle body. In this case to describe frames with origin fixed to vehicle some other symbol can be used instead of `BODY`. However, there is still need for Forward-Left-Up variant.
+* Replace `TERRAIN` modifier with `LOCAL_TERRAIN` and/or `BODY_TERRAIN` frame origin designations.
+* Assign large int values (like 50+) to all local `MAV_FRAME`s to prevent mixing of global and local frames in docs and source code. However, `MAV_FRAME_LOCAL_NED` is already assigned with `8` integer value.
 
 # Prior art
 
@@ -130,7 +141,7 @@ Common non-global frames ([[5]](http://www.perfectlogic.com/articles/avionics/fl
 
 ## ROS frames convention
 
-[REP-103 [7]](http://www.ros.org/reps/rep-0103.html) specifies axis orientation. In relation to a body the standard is Forward-Left-Up and for geographic locations **(FIXME)** it's East-North-Up.
+[REP-103 [7]](http://www.ros.org/reps/rep-0103.html) specifies axis orientation. In relation to a body the standard is Forward-Left-Up and for frames fixed w.r.t. the Earth it's East-North-Up.
 
 [REP-105 [8]](http://www.ros.org/reps/rep-0105.html) specifies naming conventions and semantic meaning for coordinate frames of mobile platforms used with ROS. The basic frames are:
 
