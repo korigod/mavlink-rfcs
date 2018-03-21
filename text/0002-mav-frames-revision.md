@@ -1,4 +1,4 @@
-* Start date: 2018-03-20
+* Start date: 2018-03-21
 * Contributors: Andrei Korigodski <akorigod@gmail.com>, Oleg Kalachev <okalachev@gmail.com>, Hamish Willee <hamishwillee@gmail.com>
 * RFC PR: [mavlink/rfcs#2](https://github.com/mavlink/rfcs/pull/2)
 * Related issues: [mavlink/mavlink#861](https://github.com/mavlink/mavlink/issues/861)
@@ -21,15 +21,15 @@ Different frames of reference are necessary in different cases:
 * the camera can be installed on the 2D gimbal, then the origin of the coordinate system should be fixed to the vehicle and yaw orientation should match vehicle yaw;
 * the camera can be mounted onboard without gimbal — in this case both the origin and the orientation of the coordinate system should be fixed to the vehicle.
 
-When using such a setup without appropriate frames developers need to receive attitude information from the vehicle, transform calculated coordinates using this attitude to supported frame and send it to the vehicle, which complicates the process and lowers the precision as attitude data is available with a certain latency.
+When using such a setup without appropriate frames developers need to receive the attitude information from the vehicle, transform the calculated coordinates using this attitude to supported frame and send it to the vehicle, which complicates the process and lowers the precision as attitude data is available with a certain latency.
 
 The same reasoning is correct for a variety of different cases e.g. following a target which is recognized using computer vision or for creating missions with items such as "fly 10 m forward".
 
-It's also necessary in some cases to have a continuous position, without discrete jumps, like integrated vehicle velocity, which always quite correctly represents vehicle movement in short-term although can drift in long-term. In ROS such a frame is called `odom`.
+It's also necessary in some cases to have a continuous position, without discrete jumps, like integrated vehicle velocity, which always quite correctly represents vehicle movement in short-term although can drift in long-term. In ROS such a frame is called `odom` [[1]](http://www.ros.org/reps/rep-0105.html).
 
 ## Disadvantages of the current frame set
 
-The current frame set is quite obscure, lacks some useful frames and often leads to confusion ([[1]](https://github.com/ArduPilot/ardupilot/issues/2447), [[2]](https://github.com/ArduPilot/ardupilot/issues/4717), [[3]](https://groups.google.com/forum/#!topic/px4users/X9rclmM9AUw)).
+The current frame set is quite obscure, lacks some useful frames and often leads to confusion ([[2]](https://github.com/ArduPilot/ardupilot/issues/2447), [[3]](https://github.com/ArduPilot/ardupilot/issues/4717), [[4]](https://groups.google.com/forum/#!topic/px4users/X9rclmM9AUw)).
 
 Let's check current non-global coordinate frames and their description:
 
@@ -43,7 +43,7 @@ The meaning of the first two frames, `MAV_FRAME_LOCAL_NED` and `MAV_FRAME_LOCAL_
 
 `MAV_FRAME_BODY_NED` description makes clear that it's frame with body orientation (fixed to vehicle): _"e.g. useful to command 2 m/s^2 acceleration to the right"_, however it's name implies it's NED frame, which is confusing. Description of `MAV_FRAME_BODY_OFFSET_NED` makes thing even more complicated because it looks like it's a real NED frame: _"e.g. useful to command 2 m/s^2 acceleration to the east"_.
 
-The only detailed explanation of current local frames meaning is in [APM documentation [4]](http://ardupilot.org/dev/docs/copter-commands-in-guided-mode.html#set-position-target-local-ned). It describes `MAV_FRAME_LOCAL_OFFSET_NED` as vehicle-carried NED frame and `MAV_FRAME_BODY_OFFSET_NED` as vehicle-carried Forward-Right-Down frame which is clear. However, behavior of `MAV_FRAME_BODY_NED` frame is complicated:
+The only detailed explanation of current local frames meaning is in [APM documentation [5]](http://ardupilot.org/dev/docs/copter-commands-in-guided-mode.html#set-position-target-local-ned). It describes `MAV_FRAME_LOCAL_OFFSET_NED` as vehicle-carried NED frame and `MAV_FRAME_BODY_OFFSET_NED` as vehicle-carried Forward-Right-Down frame which is clear. However, behavior of `MAV_FRAME_BODY_NED` frame is complicated:
 
 _Positions are relative to the vehicle’s home position in the North, East, Down (NED) frame. Use this to specify a position x metres north, y metres east and (-) z metres above the home position. Velocity directions are relative to the current vehicle heading. Use this to specify the speed forward, right and down (or the opposite if you use negative values)._
 
@@ -83,7 +83,7 @@ and `modifier` can be one of the following:
 * `TERRAIN` for frames with z equal to the terrain altitude, i.e. an altitude estimated using sonar or laser rangefinder. For underwater vehicles it's the negative distance to the surface;
 * `ODOM` for frames with continuous position, which always quite correctly represents vehicle movement in short-term although can drift in long-term.
 
-Not all combinations of these designations are proposed to be implemented as part of the current RFC. However, frames of reference named according to proposed convention could be added without separate RFC as pull requests against [mavlink/mavlink](https://github.com/mavlink/mavlink) repository directly.
+Not all combinations of these designations are proposed to be implemented as part of the current RFC. However, frames of reference named according to proposed convention could be added without separate RFC as pull requests against [mavlink/mavlink [6]](https://github.com/mavlink/mavlink) repository directly.
 
 ## Local frames set
 
@@ -133,7 +133,7 @@ The decriptions shall be updated as follows:
 
 ## Large aircraft common frames
 
-Common non-global frames ([[5]](http://www.perfectlogic.com/articles/avionics/flightdynamics/flightpart2.html), [[6]](https://www.mathworks.com/help/aeroblks/about-aerospace-coordinate-systems.html)) are:
+Common non-global frames ([[7]](http://www.perfectlogic.com/articles/avionics/flightdynamics/flightpart2.html), [[8]](https://www.mathworks.com/help/aeroblks/about-aerospace-coordinate-systems.html)) are:
 
 * Vehicle-carried NED (corresponds to `MAV_FRAME_LOCAL_NED`);
 * Velocity-oriented, or wind (with x axis aligned with vehicle velocity);
@@ -141,9 +141,9 @@ Common non-global frames ([[5]](http://www.perfectlogic.com/articles/avionics/fl
 
 ## ROS frames convention
 
-[REP-103 [7]](http://www.ros.org/reps/rep-0103.html) specifies axis orientation. In relation to a body the standard is Forward-Left-Up and for frames fixed w.r.t. the Earth it's East-North-Up.
+[REP-103 [9]](http://www.ros.org/reps/rep-0103.html) specifies axis orientation. In relation to a body the standard is Forward-Left-Up and for frames fixed w.r.t. the Earth it's East-North-Up.
 
-[REP-105 [8]](http://www.ros.org/reps/rep-0105.html) specifies naming conventions and semantic meaning for coordinate frames of mobile platforms used with ROS. The basic frames are:
+[REP-105 [1]](http://www.ros.org/reps/rep-0105.html) specifies naming conventions and semantic meaning for coordinate frames of mobile platforms used with ROS. The basic frames are:
 
 * `map` (corresponds to `MAV_FRAME_LOCAL_ENU`);
 * `odom` (corresponds to `MAV_FRAME_LOCAL_ENU_ODOM`);
@@ -151,7 +151,7 @@ Common non-global frames ([[5]](http://www.perfectlogic.com/articles/avionics/fl
 
 ## MAVROS frames
 
-[MAVROS [9]](http://wiki.ros.org/mavros) is a ROS package for communication with MAVLink devices. It provides following frames of reference:
+[MAVROS [10]](http://wiki.ros.org/mavros) is a ROS package for communication with MAVLink devices. It provides following frames of reference:
 
 * `map` (corresponds to `MAV_FRAME_LOCAL_ENU`);
 * `base_link` (Forward-Left-Up variant of `MAV_FRAME_LOCAL_RPY`);
@@ -159,7 +159,7 @@ Common non-global frames ([[5]](http://www.perfectlogic.com/articles/avionics/fl
 
 ## ardrone_autonomy frames
 
-Ardrone_autonomy is a ROS package for AR.Drone control. It [provides [10]](http://ardrone-autonomy.readthedocs.io/en/latest/frames.html) following frames of reference:
+Ardrone_autonomy is a ROS package for AR.Drone control. It [provides [11]](http://ardrone-autonomy.readthedocs.io/en/latest/frames.html) following frames of reference:
 
 * `odom` (corresponds to `MAV_FRAME_LOCAL_ENU_ODOM`);
 * `ardrone_base_link` (Forward-Left-Up variant of `MAV_FRAME_LOCAL_RPY`);
@@ -168,7 +168,7 @@ Ardrone_autonomy is a ROS package for AR.Drone control. It [provides [10]](http:
 
 ## CLEVER drone kit frames
 
-[CLEVER [11]](https://github.com/CopterExpress/clever) is an open source PX4-compatible platform based on ROS. It supports following frames of reference:
+[CLEVER [12]](https://github.com/CopterExpress/clever) is an open source PX4-compatible platform based on ROS. It supports following frames of reference:
 
 * `local_origin` (corresponds to `MAV_FRAME_LOCAL_ENU`);
 * `fcu_horiz` (corresponds to `MAV_FRAME_LOCAL_FLU`);
@@ -178,7 +178,7 @@ ENU is used instead of NED to comply with [ROS guidelines [7]](http://www.ros.or
 
 ## DJI Mobile SDK frames
 
-DJI Mobile SDK supports two frames of reference ([[12]](https://developer.dji.com/mobile-sdk/documentation/introduction/flightController_concepts.html#coordinate-systems), [[13]](https://developer.dji.com/mobile-sdk/documentation/introduction/component-guide-flightController.html)):
+DJI Mobile SDK supports two frames of reference ([[13]](https://developer.dji.com/mobile-sdk/documentation/introduction/flightController_concepts.html#coordinate-systems), [[14]](https://developer.dji.com/mobile-sdk/documentation/introduction/component-guide-flightController.html)):
 
 * `Ground` (corresponds to `MAV_FRAME_LOCAL_NED`);
 * `Body` (corresponds to `MAV_FRAME_BODY_FRD`).
