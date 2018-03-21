@@ -50,7 +50,7 @@ _Positions are relative to the vehicle’s home position in the North, East, Dow
 So the behavior of frames for positions and for velocities is not always the same, which is confusing and should be avoided. The naming pattern is unclear:
 
 * it uses three fields (`LOCAL` or `BODY`, `OFFSET` or not, `NED` or `ENU`) to describe in fact two entities: frame of reference translation (origin) and rotation. Futhermore, rotation is somehow defined by combination of `LOCAL`/`BODY` and `NED`/`ENU` which is excessive;
-* `BODY` frames are not always aligned with respect to vehicle orientation;
+* `BODY` frames are not always aligned with respect to the vehicle orientation;
 * `NED` doesn't really mean anything except direction of z axis, e.g. `MAV_FRAME_BODY_OFFSET_NED` is not NED-oriented.
 
 Both `_OFFSET_` frames are not supported by PX4 firmware at all, while `MAV_FRAME_BODY_NED` is supported only for velocity setpoints (where it acts as Forward-Right-Down oriented frame, not NED).
@@ -83,7 +83,7 @@ and `modifier` can be one of the following:
 * `TERRAIN` for frames with z equal to the terrain altitude, i.e. an altitude estimated using sonar or laser rangefinder. For underwater vehicles it's the negative distance to the surface;
 * `ODOM` for frames with continuous position, which always quite correctly represents vehicle movement in short-term although can drift in long-term.
 
-When describing vector values such as velocities, accelerations, forces etc. only orientation (rotation) of the frame must be taken into account. The norm (length) of the vector is always specified relative to the Earth, not to the moving frame of reference.
+When describing vector values such as velocities, accelerations, forces etc. only the orientation (rotation) of the frame must be taken into account. The norm (length) of the vector is always specified relative to the Earth, and not to the moving frame of reference.
 
 Not all combinations of these designations are proposed to be implemented as part of the current RFC. However, frames of reference named according to proposed convention could be added without separate RFC as pull requests against mavlink/mavlink [[6]](https://github.com/mavlink/mavlink) repository directly.
 
@@ -192,4 +192,4 @@ Yaw angle is always relative to the north.
 * The naming of Forward-Left-Up variant of `MAV_FRAME_LOCAL_RPY`.
 * The necessity of some frame with `BODY_TERRAIN` origin.
 * The necessity of `MAV_FRAME_LOCAL_FRD` and `MAV_FRAME_LOCAL_NED_ODOM` frames is not obvious.
-* On some platforms yaw is specified w.r.t. the north even in frames with an orientation fixed to the vehicle (like `Body` frame in DJI SDK). It would be possibly better to explicitly prohibit this behavior as it leads to inconsistent frame meaning.
+* On some platforms yaw is specified w.r.t. the north even in frames with the orientation fixed to the vehicle (like `Body` frame in DJI SDK). It would be possibly better to explicitly prohibit this behavior as it leads to inconsistent frame meaning.
