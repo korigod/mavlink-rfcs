@@ -5,7 +5,7 @@
 
 # Summary
 
-Revise MAVLink local frames of reference to create a clear and comprehensive frames system. Agree on frames naming convention, add some useful frames and correct descriptions.
+Revise MAVLink local frames of reference to create a clear and comprehensive frames system. Agree on the frames naming convention, add some useful frames and correct the descriptions.
 
 # Motivation
 
@@ -65,12 +65,12 @@ The proposed frames naming convention is:
 
 `MAV_FRAME_origin_rotation[_modifier]`,
 
-where `origin` can be:
+where `origin` must be one of the following:
 
 * `LOCAL` for frames with local origin fixed with respect to the Earth;
 * `BODY` for frames with origin fixed to the vehicle;
 
-`rotation` can be:
+`rotation` must be one of the following:
 
 * `NED` for North-East-Down;
 * `ENU` for East-North-Up;
@@ -78,7 +78,7 @@ where `origin` can be:
 * `FLU` for Forward-Left-Up, where Forward and Left are tangential to the Earth and Up is normal to it;
 * `RPY` for Roll-Pitch-Yaw (fixed in orientation to the moving vehicle, z axis points down when vehicle is leveled, right-handed);
 
-and `modifier` can be:
+and `modifier` can be one of the following:
 
 * `TERRAIN` for frames with z equal to the terrain altitude, i.e. an altitude estimated using sonar or laser rangefinder. For underwater vehicles it's the negative distance to the surface;
 * `ODOM` for frames with continuous position, which always quite correctly represents vehicle movement in short-term although can drift in long-term.
