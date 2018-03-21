@@ -43,7 +43,7 @@ The meaning of the first two frames, `MAV_FRAME_LOCAL_NED` and `MAV_FRAME_LOCAL_
 
 `MAV_FRAME_BODY_NED` description makes clear that it's frame with body orientation (fixed to vehicle): _"e.g. useful to command 2 m/s^2 acceleration to the right"_, however it's name implies it's NED frame, which is confusing. Description of `MAV_FRAME_BODY_OFFSET_NED` makes thing even more complicated because it looks like it's a real NED frame: _"e.g. useful to command 2 m/s^2 acceleration to the east"_.
 
-The only detailed explanation of current local frames meaning is in [APM documentation [5]](http://ardupilot.org/dev/docs/copter-commands-in-guided-mode.html#set-position-target-local-ned). It describes `MAV_FRAME_LOCAL_OFFSET_NED` as vehicle-carried NED frame and `MAV_FRAME_BODY_OFFSET_NED` as vehicle-carried Forward-Right-Down frame which is clear. However, behavior of `MAV_FRAME_BODY_NED` frame is complicated:
+The only detailed explanation of current local frames meaning is in APM documentation [[5]](http://ardupilot.org/dev/docs/copter-commands-in-guided-mode.html#set-position-target-local-ned). It describes `MAV_FRAME_LOCAL_OFFSET_NED` as vehicle-carried NED frame and `MAV_FRAME_BODY_OFFSET_NED` as vehicle-carried Forward-Right-Down frame which is clear. However, behavior of `MAV_FRAME_BODY_NED` frame is complicated:
 
 _Positions are relative to the vehicle’s home position in the North, East, Down (NED) frame. Use this to specify a position x metres north, y metres east and (-) z metres above the home position. Velocity directions are relative to the current vehicle heading. Use this to specify the speed forward, right and down (or the opposite if you use negative values)._
 
@@ -83,7 +83,9 @@ and `modifier` can be one of the following:
 * `TERRAIN` for frames with z equal to the terrain altitude, i.e. an altitude estimated using sonar or laser rangefinder. For underwater vehicles it's the negative distance to the surface;
 * `ODOM` for frames with continuous position, which always quite correctly represents vehicle movement in short-term although can drift in long-term.
 
-Not all combinations of these designations are proposed to be implemented as part of the current RFC. However, frames of reference named according to proposed convention could be added without separate RFC as pull requests against [mavlink/mavlink [6]](https://github.com/mavlink/mavlink) repository directly.
+When describing vector values such as velocities, accelerations, forces etc. only orientation (rotation) of the frame must be taken into account. The norm (length) of the vector is always specified relative to the Earth, not to the moving frame of reference.
+
+Not all combinations of these designations are proposed to be implemented as part of the current RFC. However, frames of reference named according to proposed convention could be added without separate RFC as pull requests against mavlink/mavlink [[6]](https://github.com/mavlink/mavlink) repository directly.
 
 ## Local frames set
 
@@ -127,7 +129,7 @@ The decriptions shall be updated as follows:
 * Use `RPY_FRD` and `RPY_FLU` to distinguish `RPY` frame axes orientation.
 * Use `BODY` instead of `RPY` to describe frames with axes tied to vehicle body. In this case to describe frames with origin fixed to vehicle some other symbol can be used instead of `BODY`. However, there is still need for Forward-Left-Up variant.
 * Replace `TERRAIN` modifier with `LOCAL_TERRAIN` and/or `BODY_TERRAIN` frame origin designations.
-* Assign large int values (like 50+) to all local `MAV_FRAME`s to prevent mixing of global and local frames in docs and source code. However, `MAV_FRAME_LOCAL_NED` is already assigned with `8` integer value.
+* Assign large int values (like 50+) to all local `MAV_FRAME`s to prevent mixing of global and local frames in docs and source code. However, `MAV_FRAME_LOCAL_NED`, `MAV_FRAME_LOCAL_ENU` and `MAV_FRAME_BODY_NED` is already assigned with integer values.
 
 # Prior art
 
@@ -141,9 +143,9 @@ Common non-global frames ([[7]](http://www.perfectlogic.com/articles/avionics/fl
 
 ## ROS frames convention
 
-[REP-103 [9]](http://www.ros.org/reps/rep-0103.html) specifies axis orientation. In relation to a body the standard is Forward-Left-Up and for frames fixed w.r.t. the Earth it's East-North-Up.
+REP-103 [[9]](http://www.ros.org/reps/rep-0103.html) specifies axis orientation. In relation to a body the standard is Forward-Left-Up and for frames fixed w.r.t. the Earth it's East-North-Up.
 
-[REP-105 [1]](http://www.ros.org/reps/rep-0105.html) specifies naming conventions and semantic meaning for coordinate frames of mobile platforms used with ROS. The basic frames are:
+REP-105 [[1]](http://www.ros.org/reps/rep-0105.html) specifies naming conventions and semantic meaning for coordinate frames of mobile platforms used with ROS. The basic frames are:
 
 * `map` (corresponds to `MAV_FRAME_LOCAL_ENU`);
 * `odom` (corresponds to `MAV_FRAME_LOCAL_ENU_ODOM`);
@@ -151,7 +153,7 @@ Common non-global frames ([[7]](http://www.perfectlogic.com/articles/avionics/fl
 
 ## MAVROS frames
 
-[MAVROS [10]](http://wiki.ros.org/mavros) is a ROS package for communication with MAVLink devices. It provides following frames of reference:
+MAVROS [[10]](http://wiki.ros.org/mavros) is a ROS package for communication with MAVLink devices. It provides following frames of reference:
 
 * `map` (corresponds to `MAV_FRAME_LOCAL_ENU`);
 * `base_link` (Forward-Left-Up variant of `MAV_FRAME_LOCAL_RPY`);
@@ -159,7 +161,7 @@ Common non-global frames ([[7]](http://www.perfectlogic.com/articles/avionics/fl
 
 ## ardrone_autonomy frames
 
-Ardrone_autonomy is a ROS package for AR.Drone control. It [provides [11]](http://ardrone-autonomy.readthedocs.io/en/latest/frames.html) following frames of reference:
+Ardrone_autonomy is a ROS package for AR.Drone control. It provides [[11]](http://ardrone-autonomy.readthedocs.io/en/latest/frames.html) following frames of reference:
 
 * `odom` (corresponds to `MAV_FRAME_LOCAL_ENU_ODOM`);
 * `ardrone_base_link` (Forward-Left-Up variant of `MAV_FRAME_LOCAL_RPY`);
@@ -168,13 +170,13 @@ Ardrone_autonomy is a ROS package for AR.Drone control. It [provides [11]](http:
 
 ## CLEVER drone kit frames
 
-[CLEVER [12]](https://github.com/CopterExpress/clever) is an open source PX4-compatible platform based on ROS. It supports following frames of reference:
+CLEVER [[12]](https://github.com/CopterExpress/clever) is an open source PX4-compatible platform based on ROS. It supports following frames of reference:
 
 * `local_origin` (corresponds to `MAV_FRAME_LOCAL_ENU`);
 * `fcu_horiz` (corresponds to `MAV_FRAME_LOCAL_FLU`);
 * `fcu` (Forward-Left-Up variant of `MAV_FRAME_LOCAL_RPY`).
 
-ENU is used instead of NED to comply with [ROS guidelines [7]](http://www.ros.org/reps/rep-0103.html).
+ENU is used instead of NED to comply with ROS guidelines [[9]](http://www.ros.org/reps/rep-0103.html).
 
 ## DJI Mobile SDK frames
 
@@ -183,11 +185,11 @@ DJI Mobile SDK supports two frames of reference ([[13]](https://developer.dji.co
 * `Ground` (corresponds to `MAV_FRAME_LOCAL_NED`);
 * `Body` (corresponds to `MAV_FRAME_BODY_FRD`).
 
-Yaw angle is always relative to north.
+Yaw angle is always relative to the north.
 
 # Unresolved Questions
 
-* Naming of Forward-Left-Up variant of `MAV_FRAME_LOCAL_RPY`.
-* Necessity of some frame with `BODY_TERRAIN` origin.
-* Necessity of `MAV_FRAME_LOCAL_FRD` and `MAV_FRAME_LOCAL_NED_ODOM` frames is not obvious.
-* On some platforms yaw is specified w.r.t. north even in frames with orientation fixed to the vehicle (like `Body` frame in DJI SDK). It would be possibly better to explicitly prohibit this behavior as it leads to inconsistent frame meaning.
+* The naming of Forward-Left-Up variant of `MAV_FRAME_LOCAL_RPY`.
+* The necessity of some frame with `BODY_TERRAIN` origin.
+* The necessity of `MAV_FRAME_LOCAL_FRD` and `MAV_FRAME_LOCAL_NED_ODOM` frames is not obvious.
+* On some platforms yaw is specified w.r.t. the north even in frames with an orientation fixed to the vehicle (like `Body` frame in DJI SDK). It would be possibly better to explicitly prohibit this behavior as it leads to inconsistent frame meaning.
