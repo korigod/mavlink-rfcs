@@ -29,7 +29,7 @@ It's also necessary in some cases to have a continuous position, without discret
 
 ## Disadvantages of the current frame set
 
-Current frame set is quite obscure, lacks some useful frames and often leads to confusion ([[1]](https://github.com/ArduPilot/ardupilot/issues/2447), [[2]](https://github.com/ArduPilot/ardupilot/issues/4717), [[3]](https://groups.google.com/forum/#!topic/px4users/X9rclmM9AUw)).
+The current frame set is quite obscure, lacks some useful frames and often leads to confusion ([[1]](https://github.com/ArduPilot/ardupilot/issues/2447), [[2]](https://github.com/ArduPilot/ardupilot/issues/4717), [[3]](https://groups.google.com/forum/#!topic/px4users/X9rclmM9AUw)).
 
 Let's check current non-global coordinate frames and their description:
 
@@ -47,7 +47,7 @@ The only detailed explanation of current local frames meaning is in [APM documen
 
 _Positions are relative to the vehicle’s home position in the North, East, Down (NED) frame. Use this to specify a position x metres north, y metres east and (-) z metres above the home position. Velocity directions are relative to the current vehicle heading. Use this to specify the speed forward, right and down (or the opposite if you use negative values)._
 
-So the behavior of frames for positions and for velocities is not always the same, which is confusing and should be avoided. Naming pattern is unclear:
+So the behavior of frames for positions and for velocities is not always the same, which is confusing and should be avoided. The naming pattern is unclear:
 
 * it uses three fields (`LOCAL` or `BODY`, `OFFSET` or not, `NED` or `ENU`) to describe in fact two entities: frame of reference translation (origin) and rotation. Futhermore, rotation is somehow defined by combination of `LOCAL`/`BODY` and `NED`/`ENU` which is excessive;
 * `BODY` frames are not always aligned with respect to vehicle orientation;
@@ -55,13 +55,13 @@ So the behavior of frames for positions and for velocities is not always the sam
 
 Both `_OFFSET_` frames are not supported by PX4 firmware at all, while `MAV_FRAME_BODY_NED` is supported only for velocity setpoints (where it acts as Forward-Right-Down oriented frame, not NED).
 
-`MAV_FRAME` enumeration lacks a frame which is fixed in orientation to the moving vehicle. Most similar frame, `MAV_FRAME_BODY_OFFSET_NED`, have only the yaw fixed to the vehicle.
+Furthermore, `MAV_FRAME` enumeration lacks a frame which is fixed in orientation to the moving vehicle. Most similar frame, `MAV_FRAME_BODY_OFFSET_NED`, have only the yaw fixed to the vehicle.
 
 # Detailed Design
 
 ## Frames of reference naming
 
-Proposed frames naming convention is:
+The proposed frames naming convention is:
 
 `MAV_FRAME_origin_rotation[_modifier]`,
 
@@ -99,17 +99,17 @@ Proposed non-global frames are:
 
 ## Implementation
 
-To implement proposed changes `MAV_FRAME` enum will be extended with the following entries which will be assigned consecutive integer values:
+To implement the proposed changes `MAV_FRAME` enumeration shall be extended with the following entries which shall be assigned consecutive integer values:
 
 * `MAV_FRAME_LOCAL_NED_ODOM`;
 * `MAV_FRAME_LOCAL_FRD`;
 * `MAV_FRAME_BODY_FRD`;
 * `MAV_FRAME_BODY_RPY`.
 
-The decriptions will be updated as follows:
+The decriptions shall be updated as follows:
 
-* `MAV_FRAME_LOCAL_OFFSET_NED` and `MAV_FRAME_BODY_OFFSET_NED` will be marked deprecated;
-* `MAV_FRAME_BODY_NED` description will be aligned with proposed meaning.
+* `MAV_FRAME_LOCAL_OFFSET_NED` and `MAV_FRAME_BODY_OFFSET_NED` shall be marked deprecated;
+* `MAV_FRAME_BODY_NED` description shall be aligned with the proposed meaning.
 
 # Drawbacks
 
