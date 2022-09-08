@@ -168,13 +168,13 @@ Ardrone_autonomy is a ROS package for AR.Drone control. It provides [[11]](http:
 * `ardrone_base_frontcam`;
 * `ardrone_base_bottomcam`.
 
-## CLEVER drone kit frames
+## Clover drone kit frames
 
-CLEVER [[12]](https://github.com/CopterExpress/clever) is an open source PX4-compatible platform based on ROS. It supports following frames of reference:
+Clover [[12]](https://github.com/CopterExpress/clover) is an open source PX4-compatible platform based on ROS. It supports following frames of reference:
 
-* `local_origin` (corresponds to `MAV_FRAME_LOCAL_ENU`);
-* `fcu_horiz` (corresponds to `MAV_FRAME_LOCAL_FLU`);
-* `fcu` (Forward-Left-Up variant of `MAV_FRAME_LOCAL_RPY`).
+* `map` (corresponds to `MAV_FRAME_LOCAL_ENU`);
+* `body` (corresponds to `MAV_FRAME_LOCAL_FLU`);
+* `base_link` (Forward-Left-Up variant of `MAV_FRAME_LOCAL_RPY`).
 
 ENU is used instead of NED to comply with ROS guidelines [[9]](http://www.ros.org/reps/rep-0103.html).
 
